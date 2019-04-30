@@ -3,12 +3,22 @@ import java.io.File
 
 import io.gatling.commons.stats.{OK => GatlingOK}
 import io.gatling.commons.stats.{KO => GatlingFail}
+
+import scala.collection.mutable.{Map => MMap}
 import io.gatling.commons.stats.Status
-import org.eclipse.jgit.api.CloneCommand
+import org.eclipse.jgit.api.Git
+import org.eclipse.jgit.lib.Repository
+import org.eclipse.jgit.storage.file.FileRepositoryBuilder
 
 sealed trait Request {
   def name: String
-  def send: Response
+  def send: Unit
+  def url: String
+  def user: String
+  private val repoName = url.split("/").last
+  val workTreeDirectory: File = new File(s"/tmp/test-$user-$repoName")
+  private val builder = new FileRepositoryBuilder
+  val repository: Repository = builder.setWorkTree(workTreeDirectory).build()
 
 }
 
@@ -21,22 +31,27 @@ object Request {
   }
 }
 
-case class Clone() extends Request {
-  val name = "clone"
-  def send(): Response = {
-    val rnd = Math.random()
-    val cloneCommand = new CloneCommand()
-      .setURI("http://localhost:8081/test")
-      .setDirectory(new File(s"/tmp/test-$rnd"))
-    try {
-      cloneCommand.call()
-      Response(OK)
-    } catch {
-      case _: Throwable => {
-        Response(Fail)
-      }
-    }
+case class Clone(url: String, user: String) extends Request {
 
+  val name = s"Clone: $url"
+  def send: Unit = {
+    Git.cloneRepository.setURI(url).setDirectory(workTreeDirectory).call()
+  }
+}
+
+case class Pull(url: String, user: String) extends Request {
+  override def name: String = s"Pull: $url"
+
+  override def send: Unit = {
+    new Git(repository).pull().call()
+  }
+}
+
+case class InvalidRequest(url: String, user: String) extends Request {
+  override def name: String = "Invalid Request"
+
+  override def send: Unit = {
+    throw new Exception("Invalid Git command type")
   }
 }
 

@@ -15,7 +15,7 @@ sbt "gatling:test"
 
 Single test:
 ```
-sbt "gatling:testOnly computerdatabase.BasicSimulation"
+sbt "gatling:testOnly com.github.barbasa.gatling.git.ReplayRecordsScenario"
 ```
 
 Report:

@@ -10,11 +10,7 @@ class GitRequestActionBuilder(requestBuilder: GitRequestBuilder)
   override def build(ctx: ScenarioContext, next: Action): Action = {
     import ctx.coreComponents
 
-    val gitRequest =
-      requestBuilder.build(coreComponents,
-                           requestBuilder.commandName,
-                           Map.empty)
-    new GitRequestAction(coreComponents, gitRequest, next)
+    new GitRequestAction(coreComponents, requestBuilder, next)
   }
 
 }

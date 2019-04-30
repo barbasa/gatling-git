@@ -1,47 +1,47 @@
 package com.github.barbasa.gatling.git.action
 
-import com.github.barbasa.gatling.git.request.{OK, Request}
+import com.github.barbasa.gatling.git.request.builder.GitRequestBuilder
+import com.github.barbasa.gatling.git.request.{Fail, OK, Request, Response}
 import io.gatling.commons.util.Clock
-import io.gatling.commons.validation.{Failure, Success, Validation}
 import io.gatling.core.CoreComponents
-import io.gatling.core.action.{Action, ExitableAction, RequestAction}
-import io.gatling.core.session.{Expression, Session}
+import io.gatling.core.action.{Action, ExitableAction}
+import io.gatling.core.session.Session
 import io.gatling.core.stats.StatsEngine
 import io.gatling.core.util.NameGen
 
 class GitRequestAction(coreComponents: CoreComponents,
-                       gitRequest: Request,
+                       reqBuilder: GitRequestBuilder,
                        val next: Action)
-    extends RequestAction
-    with ExitableAction
+    extends ExitableAction
     with NameGen {
-  override def requestName: Expression[String] = { session =>
-    Success(gitRequest.name)
-  }
-
-  override def sendRequest(requestName: String,
-                           session: Session): Validation[Unit] = {
-
-    val start = clock.nowMillis
-
-    val response = gitRequest.send
-    statsEngine.logResponse(session,
-                            requestName,
-                            start,
-                            clock.nowMillis,
-                            Request.gatlingStatusFromGit(response),
-                            None,
-                            None)
-
-    response.status match {
-      case OK => Success("dsdss")
-      case _  => Failure("Failed REquest!")
-    }
-  }
 
   override def statsEngine: StatsEngine = coreComponents.statsEngine
 
   override def clock: Clock = coreComponents.clock
 
   override def name: String = genName("GitRequest")
+
+  override def execute(session: Session): Unit = {
+    val start = clock.nowMillis
+
+    //XXX Mark session as failed this way if validation fails:
+    // statsEngine.reportUnbuildableRequest(...)
+    // next ! session.markAsFailed
+    val gitRequest = reqBuilder.buildWithSession(session)
+
+    val (response, message) = try {
+      gitRequest.send
+      (Response(OK), None)
+    } catch {
+      case e: Exception => (Response(Fail), Some(e.getMessage))
+    }
+    statsEngine.logResponse(session,
+                            gitRequest.name,
+                            start,
+                            clock.nowMillis,
+                            Request.gatlingStatusFromGit(response),
+                            None,
+                            message)
+    next ! session.markAsSucceeded
+  }
 }
