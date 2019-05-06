@@ -12,4 +12,9 @@ case object Git {
     new GitRequestBuilder(StaticStringExpression("pull"),
                           url,
                           StaticStringExpression("anyUser"))
+
+  def push(url: Expression[String]): GitRequestBuilder =
+    new GitRequestBuilder(StaticStringExpression("push"),
+                          url,
+                          StaticStringExpression("anyUser"))
 }

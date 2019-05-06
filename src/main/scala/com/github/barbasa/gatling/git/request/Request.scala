@@ -1,14 +1,14 @@
 package com.github.barbasa.gatling.git.request
 import java.io.File
+import java.time.LocalDateTime
 
 import io.gatling.commons.stats.{OK => GatlingOK}
 import io.gatling.commons.stats.{KO => GatlingFail}
-
-import scala.collection.mutable.{Map => MMap}
 import io.gatling.commons.stats.Status
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.lib.Repository
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder
+import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider
 
 sealed trait Request {
   def name: String
@@ -44,6 +44,27 @@ case class Pull(url: String, user: String) extends Request {
 
   override def send: Unit = {
     new Git(repository).pull().call()
+  }
+}
+
+case class Push(url: String, user: String) extends Request {
+  override def name: String = s"Push: $url"
+  val uniqueSuffix = s"$user - ${LocalDateTime.now}"
+
+  override def send: Unit = {
+    val git = new Git(repository)
+    git.add.addFilepattern(s"testfile-$uniqueSuffix").call
+    git
+      .commit()
+      .setMessage(s"Test commit - $uniqueSuffix")
+      .call()
+    // XXX Make branch configurable
+    // XXX Make credential configurable
+    git.push
+      .setCredentialsProvider(
+        new UsernamePasswordCredentialsProvider("admin", "password"))
+      .add("HEAD:refs/for/master")
+      .call()
   }
 }
 

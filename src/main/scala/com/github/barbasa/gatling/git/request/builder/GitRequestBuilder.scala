@@ -1,12 +1,7 @@
 package com.github.barbasa.gatling.git.request.builder
 
 import com.github.barbasa.gatling.git.action.GitRequestActionBuilder
-import com.github.barbasa.gatling.git.request.{
-  Clone,
-  InvalidRequest,
-  Pull,
-  Request
-}
+import com.github.barbasa.gatling.git.request._
 import io.gatling.core.session.{Expression, Session}
 
 object GitRequestBuilder {
@@ -30,6 +25,7 @@ case class GitRequestBuilder(commandName: Expression[String],
     command match {
       case "clone" => Clone(u, user)
       case "pull"  => Pull(u, user)
+      case "push"  => Push(u, user)
       case _       => InvalidRequest(u, user)
     }
   }
