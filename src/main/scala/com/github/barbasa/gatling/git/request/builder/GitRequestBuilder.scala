@@ -20,7 +20,7 @@ case class GitRequestBuilder(commandName: Expression[String],
   // parameters (i.e.: url and cmd) fails
   def buildWithSession(session: Session): Request = {
     val command = commandName(session).toOption.get.toLowerCase
-    val u = url(session).toOption.get.toLowerCase
+    val u = url(session).toOption.get
     val user = userExpr(session).toOption.get.toLowerCase
     command match {
       case "clone" => Clone(u, user)
