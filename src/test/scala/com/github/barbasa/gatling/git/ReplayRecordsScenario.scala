@@ -4,8 +4,7 @@ import com.github.barbasa.gatling.git.protocol.GitProtocol
 import com.github.barbasa.gatling.git.request.builder.GitRequestBuilder
 import io.gatling.core.Predef._
 import io.gatling.core.structure.ScenarioBuilder
-
-import scala.concurrent.duration.{FiniteDuration, MINUTES, SECONDS}
+import scala.concurrent.duration._
 
 class ReplayRecordsScenario extends Simulation {
 
@@ -24,8 +23,15 @@ class ReplayRecordsScenario extends Simulation {
       }
 //      .pause("${pause}")
 
-  setUp(replayCallsScenario.inject(atOnceUsers(3)))
+  setUp(
+    replayCallsScenario.inject(
+      nothingFor(4 seconds),
+      atOnceUsers(10),
+      rampUsers(10) during (5 seconds),
+      constantUsersPerSec(20) during (15 seconds),
+      constantUsersPerSec(20) during (15 seconds) randomized
+    ))
     .protocols(gitProtocol)
-    .maxDuration(new FiniteDuration(2, SECONDS))
+    .maxDuration(60 seconds)
   // XXX Add tear down to cleanup the files created during the simulation
 }
