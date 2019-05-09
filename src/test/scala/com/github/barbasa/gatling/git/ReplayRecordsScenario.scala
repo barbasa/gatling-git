@@ -18,7 +18,7 @@ class ReplayRecordsScenario extends Simulation {
         feed(feeder)
           .exec(
             new GitRequestBuilder("${cmd}",
-                                  "http://localhost:8081/${repo}",
+                                  "${url}",
                                   "${user}"))
       }
 //      .pause("${pause}")
