@@ -1,10 +1,16 @@
-## gerrit - performance test suite
+## Gerrit - performance test suite
 
-Project uses [sbt plugin][sbtplugindoc] of [gatling][gatlingdoc].
-It contains basic simulation from gatling quick start bundle.
+### Prerequisites
 
-[sbtplugindoc]: https://gatling.io/docs/current/extensions/sbt_plugin/
-[gatlingdoc]: https://gatling.io/docs/current/advanced_tutorial/
+* [Scala 2.12][scala]
+
+[scala]: https://www.scala-lang.org/download/
+
+### How to build
+
+```bash
+sbt compile
+```
 
 ### Setup
 
@@ -17,7 +23,7 @@ ssh-keygen -m PEM -t rsa -C "test@mail.com" -f /tmp/ssh-keys/id_rsa
 
 NOTE: Don't forget to add the public keys for the testing user(s) to your git server
 
-### Run
+### How to run the tests
 
 All tests:
 ```
@@ -29,7 +35,7 @@ Single test:
 sbt "gatling:testOnly com.github.barbasa.gatling.git.ReplayRecordsScenario"
 ```
 
-Report:
+Generate report:
 ```
 sbt "gatling:lastReport"
 ```
