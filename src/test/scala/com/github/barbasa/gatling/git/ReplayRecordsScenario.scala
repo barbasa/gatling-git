@@ -16,8 +16,11 @@ package com.github.barbasa.gatling.git
 
 import com.github.barbasa.gatling.git.protocol.GitProtocol
 import com.github.barbasa.gatling.git.request.builder.GitRequestBuilder
+import com.typesafe.config._
 import io.gatling.core.Predef._
 import io.gatling.core.structure.ScenarioBuilder
+import java.io._
+import org.apache.commons.io.FileUtils
 import scala.concurrent.duration._
 
 class ReplayRecordsScenario extends Simulation {
@@ -48,5 +51,18 @@ class ReplayRecordsScenario extends Simulation {
     ))
     .protocols(gitProtocol)
     .maxDuration(60 seconds)
-  // XXX Add tear down to cleanup the files created during the simulation
+
+  after {
+    try {
+      //After is often called too early. Some retries should be implemented.
+      Thread.sleep(5000)
+      FileUtils.deleteDirectory(new File(conf.tmpBasePath))
+      throw new IOException("test")
+    } catch {
+      case e: IOException => {
+        System.err.println("Unable to delete temporary directory: " + conf.tmpBasePath)
+        e.printStackTrace
+      }
+    }
+  }
 }
