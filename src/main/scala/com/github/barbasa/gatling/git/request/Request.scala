@@ -22,6 +22,7 @@ import com.jcraft.jsch.{Session => SSHSession}
 import io.gatling.commons.stats.{OK => GatlingOK}
 import io.gatling.commons.stats.{KO => GatlingFail}
 import io.gatling.commons.stats.Status
+import org.apache.commons.io.FileUtils
 import org.eclipse.jgit.api._
 import org.eclipse.jgit.lib.Repository
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder
@@ -98,6 +99,9 @@ object Request {
 case class Clone(url: URIish, user: String)(implicit val conf: GatlingGitConfiguration) extends Request {
 
   val name = s"Clone: $url"
+
+  FileUtils.deleteDirectory(workTreeDirectory)
+
   def send: Unit = {
     import PimpedGitTransportCommand._
     Git.cloneRepository.setAuthenticationMethod(url, cb).setURI(url.toString).setDirectory(workTreeDirectory).call()
