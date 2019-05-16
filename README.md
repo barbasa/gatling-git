@@ -23,6 +23,30 @@ ssh-keygen -m PEM -t rsa -C "test@mail.com" -f /tmp/ssh-keys/id_rsa
 
 NOTE: Don't forget to add the public keys for the testing user(s) to your git server
 
+#### Input
+
+The ReplayRecordsScenario is expecting the [src/test/resources/data/requests.json](/src/test/resources/data/requests.json) file.
+Here below an example:
+
+```json
+[
+  {
+    "url": "ssh://admin@localhost:29418/loadtest-repo.git",
+    "cmd": "clone"
+  },
+  {
+    "url": "http://localhost:8080/loadtest-repo.git",
+    "cmd": "fetch"
+  }
+]
+```
+
+Valid commands are:
+* fetch
+* pull
+* push
+* clone
+
 ### How to run the tests
 
 All tests:
