@@ -17,6 +17,7 @@ package com.github.barbasa.gatling.git.helper
 import com.github.barbasa.gatling.git.helper.MockFiles._
 import org.eclipse.jgit.api._
 import org.eclipse.jgit.lib.Repository
+import java.time.LocalDateTime
 import scala.util.Random
 
 class CommitBuilder(repository: Repository) {
@@ -33,9 +34,10 @@ class CommitBuilder(repository: Repository) {
 
     git.add.addFilepattern(".").call()
 
+    val uniqueSuffix = s"${LocalDateTime.now}"
     git
       .commit()
-      .setMessage(s"Test commit")
+      .setMessage(s"Test commit header - $uniqueSuffix\n\nTest commit body - $uniqueSuffix\n")
       .call()
   }
 }
