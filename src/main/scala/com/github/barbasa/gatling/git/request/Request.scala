@@ -14,6 +14,7 @@
 
 package com.github.barbasa.gatling.git.request
 import java.io.File
+import java.nio.file.{Files, Paths}
 import java.time.LocalDateTime
 
 import com.github.barbasa.gatling.git.GatlingGitConfiguration
@@ -33,6 +34,7 @@ import org.eclipse.jgit.transport.OpenSshConfig
 import org.eclipse.jgit.transport.SshSessionFactory
 import org.eclipse.jgit.util.FS
 import org.eclipse.jgit.transport.SshTransport
+import org.eclipse.jgit.hooks._
 
 sealed trait Request {
 
@@ -41,6 +43,7 @@ sealed trait Request {
   def send: Unit
   def url: URIish
   def user: String
+  val classLoader: ClassLoader = getClass.getClassLoader
   private val repoName = url.getPath.split("/").last
   val workTreeDirectory: File = new File(conf.tmpBasePath + s"/$user/$repoName")
   private val builder = new FileRepositoryBuilder
@@ -97,7 +100,7 @@ object Request {
   }
 }
 
-case class Clone(url: URIish, user: String)(implicit val conf: GatlingGitConfiguration) extends Request {
+case class Clone(url: URIish, user: String)(implicit val conf: GatlingGitConfiguration, val postMsgHook: Option[String] = None) extends Request {
 
   val name = s"Clone: $url"
 
@@ -106,6 +109,17 @@ case class Clone(url: URIish, user: String)(implicit val conf: GatlingGitConfigu
   def send: Unit = {
     import PimpedGitTransportCommand._
     Git.cloneRepository.setAuthenticationMethod(url, cb).setURI(url.toString).setDirectory(workTreeDirectory).call()
+
+    postMsgHook.foreach { sourceCommitMsgFile =>
+      val sourceCommitMsgPath =
+        new File(classLoader.getResource(sourceCommitMsgFile).getPath).toPath
+
+        val destinationCommitMsgPath =
+        Paths.get(workTreeDirectory.getAbsolutePath, s".git/hooks/${CommitMsgHook.NAME}")
+      new File(
+        Files.copy(sourceCommitMsgPath, destinationCommitMsgPath).toString)
+        .setExecutable(true)
+    }
   }
 }
 
