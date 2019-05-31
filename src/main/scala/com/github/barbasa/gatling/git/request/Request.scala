@@ -80,7 +80,7 @@ sealed trait Request {
     def setAuthenticationMethod(url: URIish, cb: TransportConfigCallback): C = {
       url.getScheme match {
         case "ssh" => c.setTransportConfigCallback(cb)
-        case "http" => c.setCredentialsProvider(new UsernamePasswordCredentialsProvider(conf.httpConfiguration.userName, conf.httpConfiguration.password))
+        case "http" | "https" => c.setCredentialsProvider(new UsernamePasswordCredentialsProvider(conf.httpConfiguration.userName, conf.httpConfiguration.password))
       }
     }
   }
